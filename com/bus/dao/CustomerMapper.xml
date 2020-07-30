@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bus.dao.CustomerMapper">
+
+    <resultMap id="CuResult" type="Customer">
+        <id column="id" property="id" />
+        <result column="cusName" property="cusName"/>
+        <result column="Address" property="Address"/>
+        <result column="contact" property="contact"/>
+        <result column="tel" property="tel"/>
+        <result column="email" property="email"/>
+        <association property="user" javaType="User">
+            <id column="userId" property="userId"/>
+            <result column="userName" property="userName"/>
+        </association>
+    </resultMap>
+
+
+    <!--分页查询 客户-->
+    <select id="selectAllCustomer" parameterType="Customer"  resultMap="CuResult">
+        select c.*,u.userName from customer c ,usercustomer uc,user u
+        where c.id = uc.cusId and u.userId = uc.userId
+        <if test="user.userName != null and user.userName !=''">
+            and u.userName like "%"#{user.userName}"%"/*'%${username}%'*/
+        </if>
+        ORDER BY c.id LIMIT #{map.currentPage},#{map.pageSize}
+    </select>
+
+    <!-- 总记录数 -->
+    <select id="getTotalRecord2" resultType="Integer" parameterType="Customer">
+        select count(*) from customer c ,usercustomer uc,user u
+        where c.id = uc.cusId and u.userId = uc.userId
+        <if test="user.userName != null and user.userName !=''">
+            and u.userName like "%"#{user.userName}"%"
+        </if>
+    </select>
+
+    <!--分页查询 根据员工名 找下面的客户-->
+    <select id="selectCustomerByPage" parameterType="Customer"  resultType="Customer">
+        select c.*,u.userName from customer c ,usercustomer uc,user u
+        where c.id = uc.cusid and u.userId = uc.userId and u.userName = #{empoleename}
+        ORDER BY id LIMIT #{map.currentPage},#{map.pageSize}
+    </select>
+
+    <!-- 获得总记录数 -->
+    <select id="getTotalRecord" resultType="Integer" parameterType="Customer">
+        select count(*) from customer c ,usercustomer uc,user u where c.id = uc.cusid and u.userId = uc.userId
+        and u.userName = #{empoleename}
+    </select>
+
+    <!-- 查询客户 -->
+    <select id="selectCustomerById" parameterType="Integer" resultType="Customer">
+        select * from customer where id = #{id}
+    </select>
+
+    <!--修改客户信息-->
+    <update id="updateCustomer" parameterType="Customer" >
+        update customer set cusName = #{cusName},address = #{address},contact = #{contact},tel = #{tel},email =#{email} where id = #{id}
+    </update>
+
+    <!--删除客户-->
+    <delete id="deleteCustomer" parameterType="Integer">
+        delete from customer where id = #{id}
+    </delete>
+
+    <!--添加客户-->
+    <insert id="insertCustomer" parameterType="Customer">
+        <selectKey keyColumn="id" keyProperty="id" resultType="Integer" order="AFTER">
+            select last_insert_id()
+        </selectKey>
+        insert into customer(cusName,address,contact,tel,email)
+        values (#{cusName},#{address},#{contact},#{tel},#{email})
+    </insert>
+
+    <!--根据客户id找员工id -->
+    <select id="selectUidByCid" parameterType="Integer" resultType="Integer">
+        select u.userId from customer c,user u ,usercustomer uc where c.id = uc.cusId and u.userId = uc.userId
+        and c.id = #{id}
+        /*select u.userId from customer c,user u ,usercustomer uc
+        where c.id = uc.cusId and u.userId= uc.userId
+        and c.id = 1*/
+    </select>
+</mapper>

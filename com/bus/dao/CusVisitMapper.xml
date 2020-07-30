@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bus.dao.CusVisitMapper">
+
+    <resultMap id="VisiResult" type="CustomerVisit">
+        <id column="id" property="id" />
+        <result column="content" property="content"/>
+        <result column="data" property="data"/>
+        <association property="customer" javaType="Customer">
+            <id column="id" property="id"/>
+            <result column="cusName" property="cusName"/>
+        </association>
+    </resultMap>
+
+    <resultMap id="ViResult" type="CustomerVisit">
+        <id column="id" property="id" />
+        <result column="content" property="content"/>
+        <result column="data" property="data"/>
+        <association property="customer" javaType="Customer">
+            <id column="id" property="id"/>
+            <result column="cusName" property="cusName"/>
+        </association>
+        <association property="user" javaType="User">
+            <id column="userId" property="userId"/>
+            <result column="userName" property="userName"/>
+        </association>
+    </resultMap>
+
+    <!-- 显示所有拜访记录 -->
+    <select id="selectAllVi" resultMap="ViResult" parameterType="CustomerVisit">
+        SELECT cu.*,ur.userName,c.cusName from customervisit cu,usercustomer uc,customer c,user ur
+        where cu.cusId = uc.cusId and cu.userId = ur.userId and uc.cusId = c.id and uc.userId = ur.userId
+        ORDER BY userId LIMIT #{map.currentPage},#{map.pageSize}
+    </select>
+
+    <!-- 总记录数 -->
+    <select id="getTotalRecord2" resultType="Integer" parameterType="CustomerVisit">
+        select count(*) from customervisit
+
+    </select>
+
+    <!--显示所有员工拜访记录-->
+    <select id="selectAllCusVi" resultMap="VisiResult" parameterType="CustomerVisit">
+        SELECT cu.*,c.cusName from customervisit cu,usercustomer uc,customer c,user ur
+        where cu.cusId = uc.cusId and cu.userId = ur.userId and uc.cusId = c.id and uc.userId = ur.userId
+        and cu.userId = #{empoleeid}
+        ORDER BY userId LIMIT #{map.currentPage},#{map.pageSize}
+    </select>
+
+    <!-- 获得总记录数 -->
+    <select id="getTotalRecord" resultType="Integer" parameterType="CustomerVisit">
+        select count(*) from  customervisit cu,usercustomer uc,customer c,user ur
+        where cu.cusId = uc.cusId and cu.userId = ur.userId and uc.cusId = c.id and uc.userId = ur.userId
+        and cu.userId = #{empoleeid}
+    </select>
+
+    <!--根据id查访客记录-->
+    <select id="selectViById" parameterType="Integer" resultMap="VisiResult">
+       select c.*,cu.cusName from customervisit c,Customer cu where c.cusId = cu.id and c.id = #{id}
+    </select>
+    <!--修改拜访记录-->
+    <update id="updateCusVi" parameterType="CustomerVisit">
+        update customervisit set content = #{content},data = #{data}  where id = #{id}
+    </update>
+
+    <!--删除拜访记录 -->
+    <delete id="deleteCusVi" parameterType="Integer">
+        delete  from customervisit where id = #{id}
+    </delete>
+
+    <!--添加拜访记录 -->
+    <insert id="insertCusVi" parameterType="Customervisit">
+        insert into customervisit(cusId,userId,content,data)
+         values (#{cusId},#{userId},#{content},#{data})
+    </insert>
+
+    <select id="selectCusByUserName" resultType="Customer" parameterType="String">
+        select c.* from usercustomer us,user u,customer c where u.userId = us.userId AND
+        c.id = us.cusId and u.userName = #{name}
+    </select>
+</mapper>

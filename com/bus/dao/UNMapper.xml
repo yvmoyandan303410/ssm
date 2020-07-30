@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bus.dao.UNMapper" >
+
+
+    <resultMap type="UN" id="UNResult">
+        <id column="unionId" property="unionId"/>
+
+        <association property="authority" javaType="Authority"
+                     select="com.bus.dao.AuthorityMapper.selectAuthorityById" column="authorityId">
+        </association>
+        <association property="role" javaType="Role"
+                     select="com.bus.dao.RoleMapper.selectRoleById" column="roleId">
+        </association>
+
+    </resultMap>
+
+    <select id="selectUNAll"  resultMap="UNResult">
+         select u.*,a.pinfo,r.roleName from UN u,Authority a,Role r
+         where a.authorityId = u.authorityId and r.roleId = u.roleId
+         order by u.roleId
+    </select>
+    <!--<select id="selectUNAll" parameterType="UN" resultMap="UNResult">
+         select u.*,a.pinfo,r.roleName from UN u,Authority a,Role r
+         where a.authorityId = u.authorityId and r.roleId = u.roleId
+         order by u.roleId  LIMIT #{map.currentPage},#{map.pageSize}
+    </select>
+    <select id="getTotalRecordAll" resultType="Integer" >
+        select count(*) from UN
+    </select>-->
+
+    <insert id="insertUN" parameterType="UN">
+        insert into UN (authorityId,roleId) values (#{authority.authorityId},#{role.roleId})
+    </insert>
+
+    <insert id="insertUNs" parameterType="Role">
+        insert into UN (roleId,authorityId) values
+
+        <foreach collection="authorityList" item="a" open="" close="" separator=",">
+            (#{roleId},#{a.authorityId})
+        </foreach>
+
+    </insert>
+
+    <delete id="deleteUN"  parameterType="int" >
+           delete from UN where roleId = #{id}
+    </delete>
+
+    <update id="updateUN"  parameterType="UN" >
+          update UN set authorityId=#{authority.authorityId},roleId=#{role.roleId} where unionId=#{unionId}
+    </update>
+
+    <select id="selectUNById"   resultMap="UNResult">
+          select * from UN where roleId = #{id}
+    </select>
+
+    <select id="selectchildren"   resultType="Authority">
+          select * from Authority  where parentid = #{id}
+    </select>
+
+    <select id="selectparent"   resultType="Authority">
+          select * from Authority where authorityId = #{id}
+    </select>
+
+    <select id="selectUNByCondition" parameterType="UN"  resultMap="UNResult">
+        select u.*,a.level,r.roleName from UN u,Authority a,Role r
+        where a.authorityId = u.authorityId and r.roleId = u.roleId
+        <if test="authority != null and authority.authorityId != 0">
+            and u.authorityId = #{authority.authorityId}
+        </if>
+        <if test="role != null and role.roleId != 0">
+            and u.roleId = #{role.roleId}
+        </if>
+        order by u.roleId limit #{map.startIndex}, #{map.pageSize}
+    </select>
+
+    <select id="getTotalRecordByCondition"  parameterType="UN" resultType="Integer">
+        select count(unionId) from UN u
+        <where >
+
+            <if test="authority != null and authority.authorityId != 0">
+                and u.authorityId = #{authority.authorityId}
+            </if>
+            <if test="role != null and role.roleId != 0">
+                and u.roleId = #{role.roleId}
+            </if>
+
+        </where>
+    </select>
+</mapper>

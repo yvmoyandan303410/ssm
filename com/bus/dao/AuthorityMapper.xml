@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bus.dao.AuthorityMapper">
+
+    <resultMap id="perResult" type="Authority">
+        <id column="authorityId" property="authorityId"/>
+        <result column="level" property="level"/>
+        <result column="purl" property="purl"/>
+        <result column="ismenu" property="ismenu"/>
+        <result column="parentid" property="parentid"/>
+        <result column="pinfo" property="pinfo"/>
+        <!-- 一对多查询 -->
+        <collection property="list" select="selectByParentId" column="authorityId"/>
+    </resultMap>
+
+    <!-- 查询子权限 -->
+    <select id="selectByParentId" parameterType="Integer" resultMap="perResult">
+        select * from Authority where parentid = #{id}
+    </select>
+
+    <!-- 得到开始时所有的菜单（parentid = 0 ） 带着子菜单 -->
+    <select id="selectAllPer" resultMap="perResult" >
+        select * from Authority where parentid = 0
+    </select>
+
+
+
+    <select id="selectAuthorityAll" parameterType="Authority"  resultType="Authority">
+        select * from Authority
+        ORDER BY authorityId LIMIT #{map.currentPage},#{map.pageSize}
+    </select>
+
+    <select id="getTotalRecordAll" resultType="Integer" >
+        select count(*) from Authority
+    </select>
+
+    <select id="selectAuthorityById" parameterType="Integer"  resultType="Authority">
+        select * from Authority where authorityId=#{authorityId}
+    </select>
+
+    <insert id="insertAuthoritys" parameterType="list">
+        insert into Authority (level,purl,pinfo) values
+        <foreach collection="list" item="a" open="" close="" separator=",">
+            (#{a.level},#{a.purl},#{a.pinfo})
+        </foreach>
+
+    </insert>
+
+    <insert id="insertAuthority" parameterType="Authority">
+        insert into Authority (level,purl,pinfo) values (#{level},#{purl},#{pinfo})
+    </insert>
+
+    <delete id="deleteAuthority" >
+           delete from Authority where authorityId = #{id}
+    </delete>
+
+    <update id="updateAuthority"  parameterType="Authority" >
+          update Authority set level=#{level},purl=#{purl},pinfo=#{pinfo} where authorityId=#{authorityId}
+    </update>
+
+</mapper>

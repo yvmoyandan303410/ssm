@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bus.dao.UserCusMapper" >
+
+    <!--添加客户和员工的关系-->
+    <insert id="inserUsCu" parameterType="Customer">
+        insert into usercustomer(userid,cusid)
+        values (#{empoleeid},#{id})
+    </insert>
+
+    <!--删除客户和员工的关系 -->
+    <delete id="deleteUsCu" parameterType="Customer" >
+        delete uc.* from usercustomer uc,user u where uc.userid = u.userId and uc.cusId = #{id}
+        and u.userName = #{empoleename}
+    </delete>
+
+</mapper>
